@@ -1,14 +1,11 @@
-import { SafeAreaView } from "react-native-safe-area-context";
 import { ScrollView } from "react-native-web";
 import PageTitle from "../../components/PageTitle";
 
 const PrivacyScreen = () => {
     return (
-        <SafeAreaView>
-            <ScrollView>
-                <PageTitle title="Privacy" description="Manage your privacy settings"/>
-            </ScrollView>
-        </SafeAreaView>
+        <ScrollView>
+            <PageTitle title="Privacy" description="Manage your privacy settings"/>
+        </ScrollView>
     );
 }
 
