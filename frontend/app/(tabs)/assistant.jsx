@@ -1,5 +1,6 @@
 import PageTitle from "@/components/PageTitle";
 import { FlatList, ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import ChatBubble from "../../components/ui/AssistantScreen/ChatBubble";
 import ChatInputBar from "../../components/ui/AssistantScreen/ChatInputBar";
 import QuickActionChip from "../../components/ui/AssistantScreen/QuickActionChip";
@@ -16,29 +17,32 @@ export default function AssistantScreen() {
   ];
 
   return (
-    <View className="flex-1">
-      <PageTitle title="AI Assistant" description="get instant care guidance"/>
+    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+      <View style={{flex: 1}}>
+        <PageTitle title="AI Assistant" description="get instant care guidance"/>
 
-      <View className="flex-1 bg-gray-100">
-        {/* Quick actions */}
-        <Text className="mt-4 text-gray-600 font-semibold">QUICK ACTIONS</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={true} className="h-10">
-          <QuickActionChip label="Medication interactions" />
-          <QuickActionChip label="Care tips for diabetes" />
-          <QuickActionChip label="Emergency symptoms" />
-        </ScrollView>
+        <View className="bg-gray-100">
+          {/* Quick actions */}
+          <Text className="mt-4 text-gray-600 font-semibold">QUICK ACTIONS</Text>
+          <ScrollView className="pl-5 py-1 mt-2" horizontal showsHorizontalScrollIndicator={true}>
+            <QuickActionChip label="Medication interactions" />
+            <QuickActionChip label="Care tips for diabetes" />
+            <QuickActionChip label="Emergency symptoms" />
+          </ScrollView>
+        </View>
+
+        {/* Messages */}
+        <FlatList
+          className="bg-gray-300"
+          data={messages}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{ padding: 16 }}
+          renderItem={({ item }) => <ChatBubble {...item} />}
+        />
+
+        {/* Input */}
+        <ChatInputBar />
       </View>
-
-      {/* Messages */}
-      <FlatList
-        data={messages}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ padding: 16 }}
-        renderItem={({ item }) => <ChatBubble {...item} />}
-      />
-
-      {/* Input */}
-      <ChatInputBar />
-    </View>
+    </SafeAreaView>
   );
 }

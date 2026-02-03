@@ -1,6 +1,7 @@
 import PageTitle from "@/components/PageTitle";
 import RemindersSection from "@/components/ui/RemindersScreen/RemindersSection";
 import { View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function RemindersScreen() {
   const todayReminders = [
@@ -32,9 +33,11 @@ export default function RemindersScreen() {
 
 
   return (
-    <View>
-      <PageTitle title="Reminders" description="Stay on track, do the best"/>
-      <RemindersSection remindersList={todayReminders} />
-    </View>
+    <SafeAreaView style={{flex: 1}}>  
+      <View className="flex-1">
+        <PageTitle title="Reminders" description="Stay on track, do the best"/>
+        <RemindersSection remindersList={todayReminders} />
+      </View>
+    </SafeAreaView> 
   );
 }
