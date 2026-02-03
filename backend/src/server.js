@@ -14,6 +14,10 @@ app.get("/", (req, res) => {
   res.send("API running...");
 });
 
+app.get("/helloworld", (req, res) => {
+  res.send("hello world");
+});
+
 const PORT = process.env.PORT || 5000;
 
 const initiate = () => {
