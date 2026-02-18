@@ -1,13 +1,14 @@
 import { Stack } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "../global.css";
+import AppProvider from "../src/context/AppProvider";
 import AuthProvider from "../src/context/AuthProvider";
 import useAuth from "../src/hooks/useAuth";
 
 function Navigation() {
-    const { user, loading } = useAuth();
+    const { user } = useAuth();
 
-    if(loading) return null;
+    // if(loading) return null;
 
     //reason to remove: this redirects to the login before the authlayout being mounted
     // if(!user) return (<Redirect href="/(auth)/login" />);
@@ -34,10 +35,12 @@ function Navigation() {
 
 export default function RootLayout () {
     return (
-        <AuthProvider>
-            <SafeAreaProvider>
-                <Navigation/>
-            </SafeAreaProvider>
-        </AuthProvider>
+        <AppProvider>
+            <AuthProvider>
+                <SafeAreaProvider>
+                    <Navigation/>
+                </SafeAreaProvider>
+            </AuthProvider>
+        </AppProvider>
     );
 }

@@ -3,6 +3,9 @@
 # dependencies
 node_modules/
 
+#firebase(becase the api key is included)
+/src/config/firebase.js
+
 # Expo
 .expo/
 dist/

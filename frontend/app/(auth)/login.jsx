@@ -1,10 +1,29 @@
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import useApp from "../../src/hooks/useApp";
+import useAuth from "../../src/hooks/useAuth";
 
 export default function LoginScreen() {
+  const {login} = useAuth();
+  const {showErrorToast} = useApp();
+
+  const [credentials, setCredentials] = useState({
+    email: "",
+    password: ""
+  })
+
   const router = useRouter();
+
+  const handlelogin = () => {
+    if(credentials.email !== "" || credentials.password !== "") {
+      login(credentials.email, credentials.password)
+      return;
+    }
+    showErrorToast("Please fill all the fields", "Warning");
+  } 
 
   return (
     <SafeAreaView style={{flex: 1}}>
@@ -31,6 +50,14 @@ export default function LoginScreen() {
               <TextInput
                 placeholder="you@example.com"
                 className="ml-2 flex-1 text-gray-700"
+                value={credentials.email}
+                onChangeText={(newValue) => {
+                  setCredentials(prev => ({
+                    ...prev,
+                    email: newValue
+                  }))
+                  console.log(newValue)
+                }}
               />
             </View>
 
@@ -42,6 +69,16 @@ export default function LoginScreen() {
                 placeholder="Enter your password"
                 secureTextEntry
                 className="ml-2 flex-1 text-gray-700"
+                value={credentials.password}
+                onChangeText={(newValue)=> {
+                  setCredentials(prev => (
+                    {
+                      ...prev,
+                      password: newValue
+                    }
+                  ))
+                  console.log(newValue)
+                }}
               />
               <Ionicons name="eye-outline" size={20} color="gray" />
             </View>
@@ -58,7 +95,7 @@ export default function LoginScreen() {
             {/* Sign In Button */}
             <Pressable 
               className="bg-blue-600 py-4 rounded-xl"
-              onPress={() => router.replace("/(tabs)")}>
+              onPress={() => handlelogin()}>
                 <Text className="text-white text-center font-semibold text-lg">Sign In</Text>
             </Pressable>
 
