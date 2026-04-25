@@ -1,50 +1,125 @@
-# Welcome to your Expo app 👋
+# DeAL — Frontend (frontend-v2)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+React Native mobile app built with Expo. Supports caregiver stress monitoring via wearable health data, AI chat assistance, and reminder management.
 
-## Get started
+---
 
-1. Install dependencies
+## Prerequisites
 
-   ```bash
-   npm install
-   ```
+- [Node.js](https://nodejs.org/) v18+
+- [Expo CLI](https://docs.expo.dev/get-started/installation/): `npm install -g expo-cli`
+- [EAS CLI](https://docs.expo.dev/eas/): `npm install -g eas-cli`
+- Android device or emulator with [Health Connect](https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata) installed
 
-2. Start the app
+---
 
-   ```bash
-   npx expo start
-   ```
+## Setup
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### 1. Clone and install dependencies
 
 ```bash
-npm run reset-project
+git clone <repo-url>
+cd frontend-v2
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Configure backend URL
 
-## Learn more
+Open `config/axios.js` and update the `baseURL` to point to your backend:
 
-To learn more about developing your project with Expo, look at the following resources:
+```js
+// For local development (replace with your machine's local IP)
+baseURL: "http://192.168.x.x:3000/api/v2",
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+// For production
+baseURL: "https://your-api-domain.com/api/v2",
+```
 
-## Join the community
+### 3. Configure Firebase
 
-Join our community of developers creating universal apps.
+Open `config/firebase.js` and replace the `firebaseConfig` object with your own Firebase project credentials from the [Firebase Console](https://console.firebase.google.com/):
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```js
+const firebaseConfig = {
+  apiKey: "...",
+  authDomain: "...",
+  projectId: "...",
+  storageBucket: "...",
+  messagingSenderId: "...",
+  appId: "...",
+};
+```
+
+---
+
+## Build and Run
+
+### 4. Prebuild (generates native Android project)
+
+```bash
+npx expo prebuild --clean
+```
+
+> **Warning:** `--clean` wipes the `android/` folder and regenerates it. You must re-apply the Health Connect manifest after this step (see below).
+
+### 5. Apply Health Connect Manifest (REQUIRED after every prebuild)
+
+After prebuild, the `android/app/src/main/AndroidManifest.xml` must include Health Connect permissions. A backup of the correct manifest is kept at the repo root:
+
+```
+HEALTH_CONNECT_MANIFEST_BACKUP.xml
+```
+
+**Copy its contents and replace** `android/app/src/main/AndroidManifest.xml` with it entirely.
+
+This file includes:
+- `READ_HEART_RATE` and `READ_STEPS` Health Connect permissions
+- The Health Connect package query (`com.google.android.apps.healthdata`)
+- Required intent filters for `ACTION_SHOW_PERMISSIONS_RATIONALE` and `VIEW_PERMISSION_USAGE`
+
+Without this step, Health Connect will not work on the device.
+
+### 6. Run on Android
+
+```bash
+npx expo run:android
+```
+
+Or build a shareable APK:
+
+```bash
+eas build -p android --profile preview
+```
+
+---
+
+## Project Structure
+
+```
+app/
+  (auth)/         # Login and register screens
+  (tabs)/         # Main app tabs: home, assistant, reminders, profile
+  _layout.jsx     # Root navigator, auth routing, notification setup
+components/
+  home/           # Home screen sub-components
+  screens/        # Shared screen components (loading screen)
+config/
+  axios.js        # Axios instance with Firebase token interceptor
+  firebase.js     # Firebase app initialization
+constants/
+  theme.js        # Color theme
+  healthTips.js   # Health tip data and icon helpers
+  profileContent.js  # Static text for profile modals
+contexts/
+  AuthProvider.jsx  # Firebase auth state context
+services/         # API service modules (health, stress, reminders, assistant)
+utils/            # Notification scheduling, reminder sync
+```
+
+---
+
+## Notes
+
+- The app requires a physical Android device for Health Connect features (emulators typically do not support it).
+- `HEALTH_CONNECT_MANIFEST_BACKUP.xml` is intentionally committed to the repo so it is available after every clean prebuild.
+- The `android/` folder is generated by prebuild and is excluded from version control via `.gitignore`.

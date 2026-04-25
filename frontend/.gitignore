@@ -3,9 +3,6 @@
 # dependencies
 node_modules/
 
-#firebase(becase the api key is included)
-/src/config/firebase.js
-
 # Expo
 .expo/
 dist/
@@ -28,19 +25,29 @@ expo-env.d.ts
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+*.log
 
 # macOS
 .DS_Store
 *.pem
 
 # local env files
+.env
 .env*.local
 
 # typescript
 *.tsbuildinfo
 
-app-example
+# IDE
+.vscode/
+.idea/
 
-# generated native folders
+# Config files with hardcoded credentials / environment-specific values
+# Recreate locally: copy config/firebase.example.js and config/axios.example.js
+config/firebase.js
+config/axios.js
+
+# generated native folders — recreated by `npx expo prebuild`
+# After prebuild, copy HEALTH_CONNECT_MANIFEST_BACKUP.xml to android/app/src/main/AndroidManifest.xml
 /ios
 /android

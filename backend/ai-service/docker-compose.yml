@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=False
+      - LLM_PROVIDER=openai
+      - LLM_MODEL=gpt-4
+      - LLM_API_KEY=${LLM_API_KEY}
+      - MAX_CONVERSATION_HISTORY=10
+      - CONVERSATION_TIMEOUT_MINUTES=30
+    volumes:
+      - ./app:/app/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - caregiver-network
+
+networks:
+  caregiver-network:
+    driver: bridge

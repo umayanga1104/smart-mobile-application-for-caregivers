@@ -1,46 +1,111 @@
-import { Stack } from "expo-router";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import "../global.css";
-import AppProvider from "../src/context/AppProvider";
-import AuthProvider from "../src/context/AuthProvider";
-import useAuth from "../src/hooks/useAuth";
+﻿import * as Notifications from "expo-notifications";
+import { Redirect, Stack, useSegments } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { useEffect, useRef, useState } from 'react';
+import { Platform } from 'react-native';
+import 'react-native-reanimated';
+import LoadingScreen from "../components/screens/loading-screen";
+import { Colors } from '../constants/theme';
+import AuthProvider, { useAuth } from "../contexts/AuthProvider";
+import { getAllReminders } from "../services/reminder.service";
+import { cancelAllScheduledNotifications, startNotificationListener, stopNotificationListener } from "../utils/notificationListener";
+import { syncReminderNotifications } from "../utils/reminderScheduler";
 
-function Navigation() {
-    const { user } = useAuth();
+const theme = Colors.dark;
 
-    // if(loading) return null;
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowBanner: true,
+    shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
 
-    //reason to remove: this redirects to the login before the authlayout being mounted
-    // if(!user) return (<Redirect href="/(auth)/login" />);
+function RootNavigator() {
+  const { user, authLoading } = useAuth();
+  const segments = useSegments();
+  const inAuthGroup = segments[0] === "(auth)";
 
-    return (
-        <Stack 
-            screenOptions={{ 
-                headerShown: false,
-                contentStyle: {
-                    padding: 0, // Add horizontal padding
-                }
-            }}
-        >
-            {
-                !user?<Stack.Screen name="(auth)" />:
-                <>
-                    <Stack.Screen name="(tabs)" />
-                    <Stack.Screen name="settings" />
-                </>
-            }
-        </Stack>
-    );
+  const [reminders, setReminders] = useState([]);
+  const remindersRef = useRef(reminders);
+  const notificationsSetupRef = useRef(false);
+
+  useEffect(() => {
+    remindersRef.current = reminders;
+  }, [reminders]);
+
+  useEffect(() => {
+    const setupNotifications = async () => {
+      if (authLoading) return;
+
+      if (!user) {
+        setReminders([]);
+        stopNotificationListener();
+        return;
+      }
+
+      try {
+        const { status } = await Notifications.requestPermissionsAsync();
+        if (status !== "granted") {
+          console.warn("Notification permission denied");
+        }
+
+        if (Platform.OS === "android") {
+          await Notifications.setNotificationChannelAsync("default", {
+            name: "default",
+            importance: Notifications.AndroidImportance.HIGH,
+            enableSound: true,
+            enableVibrate: true,
+          });
+        }
+
+        await cancelAllScheduledNotifications();
+        const data = await getAllReminders();
+        setReminders(data);
+
+        startNotificationListener(() => remindersRef.current);
+
+        if (!notificationsSetupRef.current) {
+          notificationsSetupRef.current = true;
+          await syncReminderNotifications(data);
+        }
+      } catch (error) {
+        console.error("Failed to setup notifications:", error.message);
+      }
+    };
+
+    setupNotifications();
+  }, [authLoading, user]);
+
+  useEffect(() => {
+    return () => stopNotificationListener();
+  }, []);
+
+  if (authLoading) return <LoadingScreen />;
+
+  if (!user && !inAuthGroup) return <Redirect href="/(auth)/login" />;
+  if (user && inAuthGroup) return <Redirect href="/(tabs)" />;
+
+  return (
+    <Stack
+      screenOptions={{
+        headerStyle: { backgroundColor: theme.background },
+        headerTintColor: theme.text,
+        contentStyle: { backgroundColor: theme.background },
+      }}
+    >
+      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+    </Stack>
+  );
 }
 
-export default function RootLayout () {
-    return (
-        <AppProvider>
-            <AuthProvider>
-                <SafeAreaProvider>
-                    <Navigation/>
-                </SafeAreaProvider>
-            </AuthProvider>
-        </AppProvider>
-    );
+export default function RootLayout() {
+  return (
+    <AuthProvider>
+      <RootNavigator />
+      <StatusBar style="light" />
+    </AuthProvider>
+  );
 }

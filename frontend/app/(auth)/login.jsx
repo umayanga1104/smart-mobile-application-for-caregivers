@@ -1,136 +1,170 @@
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { Link } from "expo-router";
 import { useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import useApp from "../../src/hooks/useApp";
-import useAuth from "../../src/hooks/useAuth";
+import {
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+} from "react-native";
+import LabeledInput from "../../components/LabeledInput";
+import { Colors } from "../../constants/theme";
+import { useAuth } from "../../contexts/AuthProvider";
+
+const theme = Colors.dark;
 
 export default function LoginScreen() {
-  const {login} = useAuth();
-  const {showErrorToast} = useApp();
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const [credentials, setCredentials] = useState({
-    email: "",
-    password: ""
-  })
-
-  const router = useRouter();
-
-  const handlelogin = () => {
-    if(credentials.email !== "" || credentials.password !== "") {
-      login(credentials.email, credentials.password)
-      return;
+  const handleLogin = async () => {
+    if (email === "") {
+      Alert.alert("Error", "Please enter your email");
+    } else if (password === "") {
+      Alert.alert("Error", "Please enter your password");
+    } else {
+      setLoading(true);
+      try {
+        await login(email, password);
+      } catch (error) {
+        Alert.alert("Login Failed", error.message || "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
     }
-    showErrorToast("Please fill all the fields", "Warning");
-  } 
+  };
 
   return (
-    <SafeAreaView style={{flex: 1}}>
-      <View className="flex-1 justify-center p-4">
-          {/* Logo Section */}
-          <View className="items-center mb-8">
-            <View className="bg-blue-600 p-5 rounded-full shadow-lg">
-              <Ionicons name="heart-outline" size={30} color="white" />
-            </View>
-            <Text className="text-3xl font-bold mt-4 text-black">CareConnect</Text>
-            <Text className="text-gray-600 mt-1">Supporting caregivers, empowering care</Text>
+    <KeyboardAvoidingView
+      style={styles.keyboardView}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <Text style={styles.appTitle}>Welcome Back</Text>
+            <Text style={styles.subtitle}>Sign in to continue</Text>
           </View>
 
-          {/* Card */}
-          <View className="bg-white p-6 rounded-3xl shadow-md">
+          {/* Form */}
+          <View style={styles.form}>
+            <LabeledInput
+              label="Email"
+              placeholder="Enter your email"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+            <LabeledInput
+              label="Password"
+              placeholder="Enter your password"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={true}
+            />
 
-            <Text className="text-2xl font-bold mb-1">Welcome Back</Text>
-            <Text className="text-gray-500 mb-6">Sign in to continue caring</Text>
-
-            {/* Email */}
-            <Text className="text-gray-700 mb-2">Email Address</Text>
-            <View className="flex-row items-center border rounded-xl px-3 py-3 mb-4">
-              <Ionicons name="mail-outline" size={20} color="gray" />
-              <TextInput
-                placeholder="you@example.com"
-                className="ml-2 flex-1 text-gray-700"
-                value={credentials.email}
-                onChangeText={(newValue) => {
-                  setCredentials(prev => ({
-                    ...prev,
-                    email: newValue
-                  }))
-                  console.log(newValue)
-                }}
-              />
-            </View>
-
-            {/* Password */}
-            <Text className="text-gray-700 mb-2">Password</Text>
-            <View className="flex-row items-center border rounded-xl px-3 py-3 mb-2">
-              <Ionicons name="lock-closed-outline" size={20} color="gray" />
-              <TextInput
-                placeholder="Enter your password"
-                secureTextEntry
-                className="ml-2 flex-1 text-gray-700"
-                value={credentials.password}
-                onChangeText={(newValue)=> {
-                  setCredentials(prev => (
-                    {
-                      ...prev,
-                      password: newValue
-                    }
-                  ))
-                  console.log(newValue)
-                }}
-              />
-              <Ionicons name="eye-outline" size={20} color="gray" />
-            </View>
-
-            {/* Remember / Forgot */}
-            <View className="flex-row justify-between items-center mb-5">
-              <View className="flex-row items-center">
-                <View className="w-4 h-4 border rounded mr-2" />
-                <Text className="text-gray-600">Remember me</Text>
-              </View>
-              <Text className="text-blue-600 font-medium">Forgot password?</Text>
-            </View>
-
-            {/* Sign In Button */}
-            <Pressable 
-              className="bg-blue-600 py-4 rounded-xl"
-              onPress={() => handlelogin()}>
-                <Text className="text-white text-center font-semibold text-lg">Sign In</Text>
-            </Pressable>
-
-            {/* Divider */}
-            <Text className="text-center text-gray-500 my-5">or continue with</Text>
-
-            {/* Social Buttons */}
-            <View className="flex-row justify-between">
-              <Pressable className="flex-1 border p-3 rounded-xl items-center mr-2 flex-row justify-center">
-                <FontAwesome name="google" size={18} color="red" />
-                <Text className="ml-2">Google</Text>
-              </Pressable>
-
-              <Pressable className="flex-1 border p-3 rounded-xl items-center ml-2 flex-row justify-center">
-                <FontAwesome name="facebook" size={18} color="#1877F2" />
-                <Text className="ml-2">Facebook</Text>
-              </Pressable>
-            </View>
-
-            {/* Sign Up Link */}
-            <Text className="text-center mt-6 text-gray-600">
-              Don&apos;t have an account?
-              <Text
-              onPress={() => router.push("/register")}
-              className="text-blue-600 font-semibold">
-                Sign up
+            <Pressable
+              style={({ pressed }) => [
+                styles.primaryButton,
+                pressed && styles.buttonPressed,
+                loading && styles.buttonDisabled,
+              ]}
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              <Text style={styles.primaryButtonText}>
+                {loading ? 'Signing In...' : 'Sign In'}
               </Text>
-            </Text>
-
+            </Pressable>
           </View>
 
-          <Text className="text-center text-xs text-gray-500 mt-6">
-            By signing in, you agree to our Terms of Service and Privacy Policy
-          </Text>
-      </View>
-    </SafeAreaView>
+          {/* Footer */}
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>Dont have an account?</Text>
+            <Link href="/register" asChild>
+              <Pressable>
+                <Text style={styles.linkText}>Create Account</Text>
+              </Pressable>
+            </Link>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
+
+const styles = StyleSheet.create({
+  keyboardView: {
+    flex: 1,
+    backgroundColor: theme.background,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    paddingVertical: 40,
+  },
+  header: {
+    marginBottom: 48,
+  },
+  appTitle: {
+    fontSize: 34,
+    fontWeight: '700',
+    color: theme.text,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 17,
+    color: theme.secondaryText,
+  },
+  form: {
+    marginBottom: 32,
+  },
+  primaryButton: {
+    backgroundColor: theme.accent,
+    borderRadius: 12,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  buttonPressed: {
+    opacity: 0.8,
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  primaryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
+  footerText: {
+    color: theme.secondaryText,
+    fontSize: 15,
+  },
+  linkText: {
+    color: theme.accent,
+    fontSize: 15,
+    fontWeight: '600',
+  },
+});

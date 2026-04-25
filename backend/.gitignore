@@ -1,3 +1,25 @@
-.env
-
+# Node
 node_modules/
+backend/node_modules/
+
+# Environment variables
+.env
+*.env
+
+# Firebase service account (sensitive credentials — never commit)
+backend/admin/*.json
+
+# Python
+**/__pycache__/
+**/*.pyc
+*.pyc
+
+# ML training dataset (large files)
+stress_prediction/WESAD/
+stress_prediction/wesad_features_v3.csv
+
+# Generated plot images
+stress_prediction/*.png
+
+# Docker
+*.log
