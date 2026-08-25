@@ -1,0 +1,43 @@
+# Firebase
+firebase.js
+firebaseAdmin.js
+*.json
+serviceAccountKey.json
+google-services.json
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+
+# Backend
+backend/admin/*.json
+backend/.env
+
+# ML/AI services
+ai-service/.env
+ml-service/.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build outputs
+android/
+build/
